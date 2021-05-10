@@ -1961,6 +1961,7 @@ __webpack_require__.r(__webpack_exports__);
   name: 'ProductComponent',
   data: function data() {
     return {
+      search: '',
       isEditMode: false,
       products: {},
       product: {
@@ -1970,11 +1971,15 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
+    // searchProduct() {
+    // 	axios.get('/api/products?search=' + this.search)
+    // 	.then(res => this.products = res.data)
+    // },
     view: function view() {
       var _this = this;
 
       var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-      axios.get('/api/products?page=' + page).then(function (res) {
+      axios.get('/api/products?page=' + page + '&search=' + this.search).then(function (res) {
         _this.products = res.data;
       });
     },
@@ -38263,7 +38268,46 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
-      _vm._m(0)
+      _c("div", { staticClass: "col-6" }, [
+        _c(
+          "form",
+          {
+            on: {
+              submit: function($event) {
+                $event.preventDefault()
+                return _vm.view($event)
+              }
+            }
+          },
+          [
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.search,
+                    expression: "search"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: { type: "text", name: "" },
+                domProps: { value: _vm.search },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.search = $event.target.value
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _vm._m(0)
+            ])
+          ]
+        )
+      ])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
@@ -38411,23 +38455,12 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-6" }, [
-      _c("form", [
-        _c("div", { staticClass: "input-group" }, [
-          _c("input", {
-            staticClass: "form-control",
-            attrs: { type: "text", name: "" }
-          }),
-          _vm._v(" "),
-          _c("div", { staticClass: "input-group-append" }, [
-            _c(
-              "button",
-              { staticClass: "btn btn-success", attrs: { type: "submit" } },
-              [_vm._v("Search")]
-            )
-          ])
-        ])
-      ])
+    return _c("div", { staticClass: "input-group-append" }, [
+      _c(
+        "button",
+        { staticClass: "btn btn-success", attrs: { type: "submit" } },
+        [_vm._v("Search")]
+      )
     ])
   },
   function() {

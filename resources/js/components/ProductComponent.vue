@@ -6,9 +6,9 @@
 				<button class="btn btn-primary" @click ="create">Create</button>
 			</div>
 			<div class="col-6">
-				<form>
+				<form @submit.prevent="view">
 					<div class="input-group">
-						<input type="text" name="" class="form-control">
+						<input v-model="search" type="text" name="" class="form-control">
 						<div class="input-group-append">
 							<button type="submit" class="btn btn-success">Search</button>
 						</div>
@@ -82,6 +82,7 @@ export default {
 
 	data () {
 		return {
+			search: '',
 			isEditMode: false,
 			products: {},
 			product: {
@@ -91,8 +92,13 @@ export default {
 		}
 	},
 	methods: {
+		// searchProduct() {
+		// 	axios.get('/api/products?search=' + this.search)
+		// 	.then(res => this.products = res.data)
+		// },
+
 		view ( page = 1 ) {
-			axios.get('/api/products?page=' + page)
+			axios.get('/api/products?page=' + page + '&search=' + this.search)
 			.then((res) => {
 				this.products = res.data;
 			})
