@@ -4,16 +4,15 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="stylesheet" type="text/css" href="/css/app.css">
+        <link rel="stylesheet" type="text/css" href="{{ mix('/css/app.css')}}">
         <title>Laravel Vue SPA</title>
 
     </head>
     <body class="antialiased">
-        <h1>This is welcome blade</h1>
         <div id="app">
-            <example-component></example-component>  
+            <product-component></product-component>  
         </div>
 
-        <script type="text/javascript" src="/js/app.js"></script>
+        <script type="text/javascript" src="{{ mix('/js/app.js')}}"></script>
     </body>
 </html>
