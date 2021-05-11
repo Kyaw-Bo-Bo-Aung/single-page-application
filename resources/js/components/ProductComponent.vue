@@ -24,16 +24,19 @@
 				<div class="card">
 					<h4 class="card-header">{{ isEditMode ? 'Edit' : 'Create'}}</h4>
 					<div class="card-body">
-						<form>
+						<form @keydown="product.onKeydown($event)">
+							<AlertError :form="product" :message="errMsg" />
 							<div class="form-group">
 								<label>Name:</label>
 								<input v-model="product.name" type="text" name="" class="form-control">
+								<HasError :form="product" field="name" />
 							</div>
 							<div class="form-group">
 								<label>Price:</label>
 								<input v-model="product.price" type="number" name="" class="form-control">
+								<HasError :form="product" field="price" />
 							</div>
-							<button class="btn btn-primary" @click.prevent="isEditMode? update():store()">{{ isEditMode ? 'Update' : 'Create' }}</button>
+							<button :disabled="product.busy" class="btn btn-primary" @click.prevent="isEditMode? update():store()">{{ isEditMode ? 'Update' : 'Create' }}</button>
 						</form>
 					</div>
 				</div>
@@ -76,19 +79,32 @@
 </template>
 
 <script>
+
+import Form from 'vform'
+import {
+  Button,
+  HasError,
+  AlertError
+} from 'vform/src/components/bootstrap4'
+
 export default {
+	components: {
+		Button, HasError, AlertError
+	},
 
 	name: 'ProductComponent',
 
 	data () {
 		return {
+			errMsg: '',
 			search: '',
 			isEditMode: false,
 			products: {},
-			product: {
+			product: new Form({
 				name: '',
 				price: ''
-			}
+			}),
+			errors: null
 		}
 	},
 	methods: {
@@ -106,40 +122,38 @@ export default {
 
 		create() {
 			this.isEditMode = false
-			this.product.name = ''
-			this.product.price = ''
+			this.product.clear()
+			this.product.reset()
 		},
 
 		store() {
-			axios.post('/api/products', this.product)
+			this.product.post('/api/products', this.product)
 			.then(res => 
 					{
 						this.view()
-						this.product.name = '';
-						this.product.price = '';
+						this.product.reset()
 					}
 				)
+			.catch(e => this.errMsg = e.response.data.message)
 		},
 
 		edit(product) {
 			this.isEditMode = true
+			this.product.clear()
 			this.product.id = product.id
-			this.product.name = product.name
-			this.product.price = product.price
+			this.product.fill(product)
 		},
 
 		update() {
-			axios.put('/api/products/'+ this.product.id , this.product)
+			this.product.put('/api/products/'+ this.product.id , this.product)
 			.then(res => 
 					{
 						this.isEditMode = false;
 						this.view();
-						this.product.id = '';
-						this.product.name = '';
-						this.product.price = '';
+						this.product.reset();
 					}
 				)
-			.catch(error => console.log(error) )
+			.catch(e => this.errMsg = e.response.data.message)
 		},
 
 		destroy (id) {
