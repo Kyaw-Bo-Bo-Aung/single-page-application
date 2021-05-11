@@ -10,6 +10,7 @@
     </head>
     <body class="antialiased">
         <div id="app">
+            <vue-progress-bar></vue-progress-bar>
             <product-component></product-component>  
         </div>
 

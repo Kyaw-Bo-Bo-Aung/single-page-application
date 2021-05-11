@@ -55,7 +55,14 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="product in products.data" :key='product.id'>
+						<tr v-if="loading">
+							<td colspan="4" rowspan="5" class="text-center">
+								<div class="spinner-grow" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</td>
+						</tr>
+						<tr v-if="!loading" v-for="product in products.data" :key='product.id'>
 							<td>{{product.id}}</td>
 							<td>{{product.name}}</td>
 							<td>{{product.price}}</td>
@@ -66,7 +73,7 @@
 				</table>
 
 				<!-- pagination -->
-				<pagination class="my-3" :data="products" @pagination-change-page="view"></pagination>
+				<pagination v-if="!loading" class="my-3" :data="products" @pagination-change-page="view"></pagination>
 				<!-- end pagination -->
 
 			</div>
@@ -81,11 +88,7 @@
 <script>
 
 import Form from 'vform'
-import {
-  Button,
-  HasError,
-  AlertError
-} from 'vform/src/components/bootstrap4'
+import { Button, HasError, AlertError } from 'vform/src/components/bootstrap4'
 
 export default {
 	components: {
@@ -96,6 +99,7 @@ export default {
 
 	data () {
 		return {
+			loading: false,
 			errMsg: '',
 			search: '',
 			isEditMode: false,
@@ -114,12 +118,17 @@ export default {
 		// },
 
 		view ( page = 1 ) {
+			this.loading = true
+			this.$Progress.finish()
+			
 			axios.get('/api/products?page=' + page + '&search=' + this.search)
 			.then((res) => {
-				this.products = res.data;
+				this.products = res.data
+				this.loading = false
 			})
 		},
 
+		// top bar create btn
 		create() {
 			this.isEditMode = false
 			this.product.clear()
@@ -127,14 +136,26 @@ export default {
 		},
 
 		store() {
+			this.loading = true
+			this.$Progress.start()
 			this.product.post('/api/products', this.product)
 			.then(res => 
 					{
+						this.$Progress.finish()
 						this.view()
 						this.product.reset()
+						toastMixin.fire({
+							title: 'Created Successfully',
+							animation: true,
+							icon: 'success',
+							position: 'top-end'
+						})
 					}
 				)
-			.catch(e => this.errMsg = e.response.data.message)
+			.catch(e => {
+				this.$Progress.fail()
+				this.errMsg = e.response.data.message
+			})
 		},
 
 		edit(product) {
@@ -145,27 +166,55 @@ export default {
 		},
 
 		update() {
+			this.$Progress.start()
 			this.product.put('/api/products/'+ this.product.id , this.product)
 			.then(res => 
 					{
+						this.$Progress.finish()
 						this.isEditMode = false;
 						this.view();
 						this.product.reset();
+						toastMixin.fire({
+							title: 'Edit Success!',
+							animation: true,
+							icon: 'success',
+							position: 'top-end'
+						})
 					}
 				)
-			.catch(e => this.errMsg = e.response.data.message)
+			.catch(e => {
+				this.$Progress.fail()
+				this.errMsg = e.response.data.message
+			})
 		},
 
 		destroy (id) {
-			if (!confirm('Are you sure')) {
-				return
-			};
+			swal.fire({
+			  title: 'Are you sure?',
+			  icon: 'warning',
+			  showCancelButton: true,
+			  confirmButtonColor: '#3085d6',
+			  cancelButtonColor: '#d33',
+			  confirmButtonText: 'Delete!'
+			}).then(res => {
+				if (!res.isConfirmed) {
+					return
+				}
+					axios.delete('/api/products/' + id)
+					.then(res => this.view())
+					swal.fire(
+						{
+							title: 'Deleted',
+							icon: 'success'
+						}
+					)
+			})
 
-			axios.delete('/api/products/' + id)
-			.then(res => this.view())
+			
 		}
 	},
 	created() {
+		this.$Progress.start()
 		this.view();
 	}
 }
